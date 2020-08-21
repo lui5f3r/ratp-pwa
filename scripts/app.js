@@ -163,6 +163,20 @@
             {
                 message: '5 mn'
             }
+        ],
+        key: 'metros/1/nation/R',
+        label:'Nation, Direction Château de Vincennes',
+        created: '2020-08-20T17:08:42+02:00',
+        schedules: [
+            {
+                message: '0 mn'
+            },
+            {
+                message: '2 mn'
+            },
+            {
+                message: '5 mn'
+            }
         ]
 
 
