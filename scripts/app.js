@@ -1,6 +1,31 @@
 (function () {
     'use strict';
 
+    if (!('indexedDB' in window)) {
+        console.log('This browser doesn\'t support IndexedDB');
+        return;
+    }
+
+    var dbPromise = idb.open('metroStations',1,function(upgradeDb){
+        console.log('Creating metroStations object store');
+        upgradeDb.createObjectStore('schedules', {keyPath: 'key'});
+    });
+
+    app.saveSchedules =  function(){
+        dbPromise.then(function(db){
+            var tx = db.transaction('schedules', 'readwrite');
+            var store = tx.objectStore('schedules');
+            var item = {
+                key: 1,
+                schedules: app.selectedTimetables
+            }
+            store.add(item);
+            return tx.complete;
+        }).then(function(){
+            console.log('schedules added to storage');
+        });
+    }
+
     var app = {
         isLoading: true,
         visibleCards: {},
@@ -40,6 +65,7 @@
         }
         app.getSchedule(key, label);
         app.selectedTimetables.push({key: key, label: label});
+        app.saveSchedules();
         app.toggleAddDialog(false);
     });
 
