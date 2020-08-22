@@ -11,12 +11,28 @@ const FILES_TO_CACHE = [
     "/scripts/idb.js",
     "/styles/inline.css",
     "/images/ic_add_white_24px.svg",
-    "/images/ic_refresh_white_24px.svg",
+    "/images/ic_refresh_white_24px.svg"
 ];
 
-self.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-        console.log('[ServiceWorker] Pre-caching offline page');
-        return cache.addAll(FILES_TO_CACHE);
-    })
-);
+self.addEventListener('install', function(evt) {
+    console.log('[ServiceWorker] Install');
+    evt.waitUntil(
+      caches.open(cacheName).then(function(cache) {
+        console.log('[ServiceWorker] Caching app shell');
+        return cache.addAll(filesToCache);
+      })
+    );
+  });
+
+ /* self.addEventListener('activate', (evt) => {
+    console.log('[ServiceWorker] Activate');
+    // CODELAB: Remove previous cached data from disk.
+  
+    self.clients.claim();
+  });
+  
+  self.addEventListener('fetch', (evt) => {
+    console.log('[ServiceWorker] Fetch', evt.request.url);
+    // CODELAB: Add fetch event handler here.
+  
+  });*/
