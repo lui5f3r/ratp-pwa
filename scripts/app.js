@@ -7,7 +7,7 @@
     }
 
     var app = {
-        
+
         isLoading: true,
         visibleCards: {},
         selectedTimetables: [],
@@ -16,33 +16,33 @@
         container: document.querySelector('.main'),
         addDialog: document.querySelector('.dialog-container')
     };
-  
-    var dbPromise = idb.open('metroStations',1,function(upgradeDb){
-         if (!upgradeDb.objectStoreNames.contains('schedules')) {
-          console.log('Creating metroStations object store');
-          upgradeDb.createObjectStore('schedules', {keyPath: 'key'});
-         }
+
+    var dbPromise = idb.open('metroStations', 1, function (upgradeDb) {
+        if (!upgradeDb.objectStoreNames.contains('schedules')) {
+            console.log('Creating metroStations object store');
+            upgradeDb.createObjectStore('schedules', { keyPath: 'key' });
+        }
     });
 
-    app.saveSchedules =  function(){
-      dbPromise.then(function(db) {
+    app.saveSchedules = function () {
+        dbPromise.then(function (db) {
             var tx = db.transaction('schedules', 'readwrite');
             var store = tx.objectStore('schedules');
             store.delete(1);
             return tx.complete;
-        }).then(function(){
-            dbPromise.then(function(db) {
-              var tx = db.transaction('schedules', 'readwrite');
-              var store = tx.objectStore('schedules');
-              var item = {
-                  key: 1,
-                  schedules: app.selectedTimetables
-              }
-              store.add(item);
-              return tx.complete;
-        }).then(function(){
-            console.log('schedules added to storage');
-          });
+        }).then(function () {
+            dbPromise.then(function (db) {
+                var tx = db.transaction('schedules', 'readwrite');
+                var store = tx.objectStore('schedules');
+                var item = {
+                    key: 1,
+                    schedules: app.selectedTimetables
+                }
+                store.add(item);
+                return tx.complete;
+            }).then(function () {
+                console.log('schedules added to storage');
+            });
         });
     };
 
@@ -74,7 +74,7 @@
             app.selectedTimetables = [];
         }
         app.getSchedule(key, label);
-        app.selectedTimetables.push({key: key, label: label});
+        app.selectedTimetables.push({ key: key, label: label });
         app.saveSchedules();
         app.toggleAddDialog(false);
     });
@@ -124,10 +124,10 @@
         card.querySelector('.card-last-updated').textContent = data.created;
 
         var scheduleUIs = card.querySelectorAll('.schedule');
-        for(var i = 0; i<4; i++) {
+        for (var i = 0; i < 4; i++) {
             var schedule = schedules[i];
             var scheduleUI = scheduleUIs[i];
-            if(schedule && scheduleUI) {
+            if (schedule && scheduleUI) {
                 scheduleUI.querySelector('.message').textContent = schedule.message;
             }
         }
@@ -149,6 +149,7 @@
     app.getSchedule = function (key, label) {
         var url = 'https://api-ratp.pierre-grimaud.fr/v3/schedules/' + key;
 
+        getSchedulesFromCache(url, key, label);   
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
             if (request.readyState === XMLHttpRequest.DONE) {
@@ -201,7 +202,7 @@
             }
         ],
         key: 'metros/1/nation/R',
-        label:'Nation, Direction Château de Vincennes',
+        label: 'Nation, Direction Château de Vincennes',
         created: '2020-08-20T17:08:42+02:00',
         schedules: [
             {
@@ -218,14 +219,37 @@
 
     };
 
+    function getSchedulesFromCache(url, key, label) {
+        // CODELAB: Add code to get weather forecast from the caches object.
+        if (!('caches' in window)) {
+            return null;
+        }        
+        return caches.match(url).then((response) => {
+                if (response) {
+                    response.json().then(function updateFromCache(json){
+                        var result = {};
+                        result.key = key;
+                        result.label = label;
+                        result.created = json.query.created;                        
+                        result.schedules = response.result.schedules;
+                        app.updateTimetableCard(result);
+                    })}
+                return null;
+            })
+            .catch((err) => {
+                console.error('Error getting data from cache', err);
+                return null;
+            });
+    }
+
 
     /*if (localStorage.getItem("firstLoad") == null){                 */
-          app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
-          app.getSchedule('metros/1/nation/R', 'Nation, Direction Château de Vincennes');
-          app.selectedTimetables = [
-              {key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense'},
-              {key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes'}
-          ];          
+    app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
+    app.getSchedule('metros/1/nation/R', 'Nation, Direction Château de Vincennes');
+    app.selectedTimetables = [
+        { key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense' },
+        { key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes' }
+    ];
     /*}else{
         app.selectedTimetables = [
             {key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense'},
@@ -245,5 +269,5 @@
      *   Instead, check out IDB (https://www.npmjs.com/package/idb) or
      *   SimpleDB (https://gist.github.com/inexorabletash/c8069c042b734519680c)
      ************************************************************************/
-    
+
 })();
