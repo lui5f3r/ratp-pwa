@@ -14,7 +14,7 @@ const FILES_TO_CACHE = [
     "/images/ic_refresh_white_24px.svg",
 ];
 
-evt.waitUntil(
+self.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
         console.log('[ServiceWorker] Pre-caching offline page');
         return cache.addAll(FILES_TO_CACHE);
