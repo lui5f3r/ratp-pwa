@@ -230,7 +230,7 @@
                         var result = {};
                         result.key = key;
                         result.label = label;
-                        result.created = json.query.created;                        
+                        result.created = response._metadata.date;
                         result.schedules = response.result.schedules;
                         app.updateTimetableCard(result);
                     })}
