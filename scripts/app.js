@@ -7,6 +7,7 @@
     }
 
     var app = {
+        
         isLoading: true,
         visibleCards: {},
         selectedTimetables: [],
@@ -45,7 +46,7 @@
         });
     };
 
-
+    var firstLoad = true;
     /*****************************************************************************
      *
      * Event listeners for UI elements
@@ -218,6 +219,22 @@
     };
 
 
+    /*if (localStorage.getItem("firstLoad") == null){                 */
+          app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
+          app.getSchedule('metros/1/nation/R', 'Nation, Direction Château de Vincennes');
+          app.selectedTimetables = [
+              {key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense'},
+              {key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes'}
+          ];          
+    /*}else{
+        app.selectedTimetables = [
+            {key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense'},
+            {key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes'}
+        ];
+        
+    }
+    localStorage.setItem("firstLoad", new Date());*/
+
     /************************************************************************
      *
      * Code required to start the app
@@ -228,10 +245,5 @@
      *   Instead, check out IDB (https://www.npmjs.com/package/idb) or
      *   SimpleDB (https://gist.github.com/inexorabletash/c8069c042b734519680c)
      ************************************************************************/
-
-    app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
-    app.selectedTimetables = [
-        {key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense'},
-        {key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes'}
-    ];
+    
 })();
