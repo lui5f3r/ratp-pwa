@@ -6,26 +6,6 @@
         return;
     }
 
-    var dbPromise = idb.open('metroStations',1,function(upgradeDb){
-        console.log('Creating metroStations object store');
-        upgradeDb.createObjectStore('schedules', {keyPath: 'key'});
-    });
-
-    app.saveSchedules =  function(){
-        dbPromise.then(function(db){
-            var tx = db.transaction('schedules', 'readwrite');
-            var store = tx.objectStore('schedules');
-            var item = {
-                key: 1,
-                schedules: app.selectedTimetables
-            }
-            store.add(item);
-            return tx.complete;
-        }).then(function(){
-            console.log('schedules added to storage');
-        });
-    }
-
     var app = {
         isLoading: true,
         visibleCards: {},
@@ -34,6 +14,35 @@
         cardTemplate: document.querySelector('.cardTemplate'),
         container: document.querySelector('.main'),
         addDialog: document.querySelector('.dialog-container')
+    };
+  
+    var dbPromise = idb.open('metroStations',1,function(upgradeDb){
+         if (!upgradeDb.objectStoreNames.contains('schedules')) {
+          console.log('Creating metroStations object store');
+          upgradeDb.createObjectStore('schedules', {keyPath: 'key'});
+         }
+    });
+
+    app.saveSchedules =  function(){
+      dbPromise.then(function(db) {
+            var tx = db.transaction('schedules', 'readwrite');
+            var store = tx.objectStore('schedules');
+            store.delete(1);
+            return tx.complete;
+        }).then(function(){
+            dbPromise.then(function(db) {
+              var tx = db.transaction('schedules', 'readwrite');
+              var store = tx.objectStore('schedules');
+              var item = {
+                  key: 1,
+                  schedules: app.selectedTimetables
+              }
+              store.add(item);
+              return tx.complete;
+        }).then(function(){
+            console.log('schedules added to storage');
+          });
+        });
     };
 
 
@@ -222,6 +231,7 @@
 
     app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
     app.selectedTimetables = [
-        {key: initialStationTimetable.key, label: initialStationTimetable.label}
+        {key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense'},
+        {key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes'}
     ];
 })();
