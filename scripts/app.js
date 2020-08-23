@@ -149,7 +149,7 @@
     app.getSchedule = function (key, label) {
         var url = 'https://api-ratp.pierre-grimaud.fr/v3/schedules/' + key;
 
-        getSchedulesFromCache(url, key, label);   
+        getSchedulesFromCache(url, key, label);
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
             if (request.readyState === XMLHttpRequest.DONE) {
@@ -223,19 +223,20 @@
         // CODELAB: Add code to get weather forecast from the caches object.
         if (!('caches' in window)) {
             return null;
-        }        
+        }
         return caches.match(url).then((response) => {
-                if (response) {
-                    response.json().then(function updateFromCache(json){
-                        var result = {};
-                        result.key = key;
-                        result.label = label;
-                        result.created = json._metadata.date;
-                        result.schedules = json.result.schedules;
-                        app.updateTimetableCard(result);
-                    })}
-                return null;
-            })
+            if (response) {
+                response.json().then(function updateFromCache(json) {
+                    var result = {};
+                    result.key = key;
+                    result.label = label;
+                    result.created = json._metadata.date;
+                    result.schedules = json.result.schedules;
+                    app.updateTimetableCard(result);
+                })
+            }
+            return null;
+        })
             .catch((err) => {
                 console.error('Error getting data from cache', err);
                 return null;
@@ -243,31 +244,35 @@
     }
 
 
-    /*if (localStorage.getItem("firstLoad") == null){                 */
-    app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
-    app.getSchedule('metros/1/nation/R', 'Nation, Direction Château de Vincennes');
-    app.selectedTimetables = [
-        { key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense' },
-        { key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes' }
-    ];
-    /*}else{
-        app.selectedTimetables = [
-            {key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense'},
-            {key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes'}
-        ];
-        
-    }
-    localStorage.setItem("firstLoad", new Date());*/
 
-    /************************************************************************
-     *
-     * Code required to start the app
-     *
-     * NOTE: To simplify this codelab, we've used localStorage.
-     *   localStorage is a synchronous API and has serious performance
-     *   implications. It should not be used in production applications!
-     *   Instead, check out IDB (https://www.npmjs.com/package/idb) or
-     *   SimpleDB (https://gist.github.com/inexorabletash/c8069c042b734519680c)
-     ************************************************************************/
+    dbPromise.then(function (db) {
+        window.inicialLoadTime = performance.now();
+        var tx = db.transaction('schedules', 'readonly');
+        var store = tx.objectStore('schedules');
+
+        return store.openCursor();
+    }).then(function showRange(cursor) {
+        console.log('Evaluating cursor');
+        if (!cursor) {
+            app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
+            app.getSchedule('metros/1/nation/R', 'Nation, Direction Château de Vincennes');
+            app.selectedTimetables = [
+                { key: 'metros/1/bastille/A', label: 'Bastille, Direction La Défense' },
+                { key: 'metros/1/nation/R', label: 'Nation, Direction Château de Vincennes' }
+            ];
+
+            app.saveSchedules();
+            return;
+        } else {
+            app.selectedTimetables = cursor.value.schedules;
+            app.selectedTimetables.forEach(function (table) {
+                app.getSchedule(table.key, table.label);
+            });
+        }
+
+
+
+        return cursor.continue().then(showRange);
+    });
 
 })();
