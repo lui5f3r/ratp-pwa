@@ -6,6 +6,7 @@ workbox.loadModule('workbox-routing');
 workbox.loadModule('workbox-expiration');
 workbox.loadModule('workbox-precaching');
 
+
 if (workbox) {
   workbox.routing.registerRoute(
     new RegExp('\.css$'),
@@ -45,7 +46,14 @@ if (workbox) {
     })
   );
 
-  workbox.precaching.precacheAndRoute([]);
+  workbox.precaching.precacheAndRoute([
+    'index.html',
+      '/scripts/app.js',
+      '/scripts/idb.js',
+      '/styles/inline.css',
+      '/images/ic_add_white_24px.svg',
+      '/images/ic_refresh_white_24px.svg',
+  ]);
 
 }
 
